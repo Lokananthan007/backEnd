@@ -1,6 +1,6 @@
-// Server.js
 const express = require("express");
 const cors = require('cors');
+const multer = require('multer');
 const bodyParser = require('body-parser');
 const Database = require('./database');
 const User = require('./stuModel');
@@ -10,8 +10,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ extended: false }));
 app.use(cors());
 
-// Connect to the database
 Database.connect();
+
+const storage = multer.memoryStorage(); // Save images in memory as Buffer
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // Adjust the file size limit as needed
+});
 
 app.get("/", async (req, res) => {
   console.log("connected");
@@ -28,15 +33,17 @@ app.get("/users", async (req, res) => {
   }
 });
 
-app.post("/users", async (req, res) => {
-  const { name, class: className, place, phoneNumber, photo } = req.body;
+app.post("/users", upload.single('photo'), async (req, res) => {
+  const { name, class: className, place, phoneNumber } = req.body;
+
+  const photo = req.file;
 
   const newUser = new User({
     name,
     class: className,
     place,
     phoneNumber,
-    photo
+    photo: photo.buffer, 
   });
 
   try {
