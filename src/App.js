@@ -6,7 +6,6 @@ function App() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    // Fetch data from the server when the component mounts
     const fetchData = async () => {
       try {
         const response = await axios.get('http://localhost:2233/users');
@@ -17,7 +16,7 @@ function App() {
     };
 
     fetchData();
-  }, []); // Empty dependency array ensures the effect runs only once on mount
+  }, []); 
 
   return (
     <div className="App">
@@ -40,7 +39,11 @@ function App() {
               <td>{user.place}</td>
               <td>{user.phoneNumber}</td>
               <td>
-                {user.photo && <img src={user.photo} alt={user.name} style={{ width: '50px' }} />}
+                {user.photo && typeof user.photo === 'string' ? (
+                  <img src={user.photo} alt={user.name} style={{ width: '50px' }} />
+                ) : user.photo && user.photo instanceof Buffer ? (
+                  <img src={`data:image/jpeg;base64,${user.photo.toString('base64')}`} alt={user.name} style={{ width: '50px' }} />
+                ) : null}
               </td>
             </tr>
           ))}
